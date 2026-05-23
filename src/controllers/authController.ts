@@ -3,11 +3,10 @@ import jwt from 'jsonwebtoken';
 import User from '../models/User';
 import Notification from '../models/Notification';
 
-// ── Fix: cast expiresIn as string to satisfy strict TypeScript ─────────────────
+// ── Fix: use number (seconds) instead of string for expiresIn ─────────────────
 const signToken = (id: string): string => {
-  const secret    = process.env.JWT_SECRET as string;
-  const expiresIn = (process.env.JWT_EXPIRES_IN || '7d') as string;
-  return jwt.sign({ id }, secret, { expiresIn } as jwt.SignOptions);
+  const secret = process.env.JWT_SECRET as string;
+  return jwt.sign({ id }, secret, { expiresIn: 60 * 60 * 24 * 7 }); // 7 days in seconds
 };
 
 // POST /api/v1/auth/register
@@ -28,10 +27,10 @@ export const register = async (req: Request, res: Response) => {
 
     // Seed welcome notifications
     await Notification.insertMany([
-      { userId: user._id, title: '👋 Welcome to HealthTrack360!',    message: 'Start by logging your first health entry today.',              type: 'tip'         },
-      { userId: user._id, title: '🤖 AI Assistant Activated',         message: 'Your personal AI health assistant is ready to help anytime.',  type: 'achievement' },
-      { userId: user._id, title: '💡 Daily Wellness Tip',             message: 'Drink 2 glasses of water first thing every morning.',          type: 'tip'         },
-      { userId: user._id, title: '🎯 Set Your First Habit',           message: 'Go to Habits and add a healthy daily habit to track.',         type: 'reminder'    },
+      { userId: user._id, title: '👋 Welcome to HealthTrack360!',  message: 'Start by logging your first health entry today.',             type: 'tip'         },
+      { userId: user._id, title: '🤖 AI Assistant Activated',       message: 'Your personal AI health assistant is ready to help anytime.', type: 'achievement' },
+      { userId: user._id, title: '💡 Daily Wellness Tip',           message: 'Drink 2 glasses of water first thing every morning.',         type: 'tip'         },
+      { userId: user._id, title: '🎯 Set Your First Habit',         message: 'Go to Habits and add a healthy daily habit to track.',        type: 'reminder'    },
     ]);
 
     res.status(201).json({
