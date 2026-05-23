@@ -3,10 +3,12 @@ import jwt from 'jsonwebtoken';
 import User from '../models/User';
 import Notification from '../models/Notification';
 
-const signToken = (id: string): string =>
-  jwt.sign({ id }, process.env.JWT_SECRET!, {
-    expiresIn: process.env.JWT_EXPIRES_IN || '7d',
-  });
+// ── Fix: cast expiresIn as string to satisfy strict TypeScript ─────────────────
+const signToken = (id: string): string => {
+  const secret    = process.env.JWT_SECRET as string;
+  const expiresIn = (process.env.JWT_EXPIRES_IN || '7d') as string;
+  return jwt.sign({ id }, secret, { expiresIn } as jwt.SignOptions);
+};
 
 // POST /api/v1/auth/register
 export const register = async (req: Request, res: Response) => {
@@ -35,7 +37,17 @@ export const register = async (req: Request, res: Response) => {
     res.status(201).json({
       success: true,
       token,
-      user: { id: user._id, name: user.name, email: user.email, role: user.role, gender: user.gender, age: user.age, city: user.city, state: user.state, country: user.country },
+      user: {
+        id:      user._id,
+        name:    user.name,
+        email:   user.email,
+        role:    user.role,
+        gender:  user.gender,
+        age:     user.age,
+        city:    user.city,
+        state:   user.state,
+        country: user.country,
+      },
     });
   } catch (err: any) {
     res.status(500).json({ success: false, message: err.message || 'Server error.' });
@@ -57,7 +69,17 @@ export const login = async (req: Request, res: Response) => {
     res.json({
       success: true,
       token,
-      user: { id: user._id, name: user.name, email: user.email, role: user.role, gender: user.gender, age: user.age, city: user.city, state: user.state, country: user.country },
+      user: {
+        id:      user._id,
+        name:    user.name,
+        email:   user.email,
+        role:    user.role,
+        gender:  user.gender,
+        age:     user.age,
+        city:    user.city,
+        state:   user.state,
+        country: user.country,
+      },
     });
   } catch (err: any) {
     res.status(500).json({ success: false, message: err.message || 'Server error.' });
@@ -69,6 +91,17 @@ export const getMe = async (req: Request, res: Response) => {
   const user = (req as any).user;
   res.json({
     success: true,
-    user: { id: user._id, name: user.name, email: user.email, role: user.role, gender: user.gender, age: user.age, city: user.city, state: user.state, country: user.country, createdAt: user.createdAt },
+    user: {
+      id:        user._id,
+      name:      user.name,
+      email:     user.email,
+      role:      user.role,
+      gender:    user.gender,
+      age:       user.age,
+      city:      user.city,
+      state:     user.state,
+      country:   user.country,
+      createdAt: user.createdAt,
+    },
   });
 };
